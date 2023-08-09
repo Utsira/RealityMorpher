@@ -14,6 +14,10 @@
 		513DB0882A79AFD60098D767 /* MorphTargetExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0872A79AFD60098D767 /* MorphTargetExampleTests.swift */; };
 		513DB0922A79AFD60098D767 /* MorphTargetExampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0912A79AFD60098D767 /* MorphTargetExampleUITests.swift */; };
 		513DB0942A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0932A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift */; };
+		513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0A42A7AAF0D0098D767 /* RealityView.swift */; };
+		513DB0A82A7AB06F0098D767 /* cloth0.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A62A7AB06F0098D767 /* cloth0.usdz */; };
+		513DB0A92A7AB06F0098D767 /* cloth1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A72A7AB06F0098D767 /* cloth1.usdz */; };
+		513DB0AC2A7AB28D0098D767 /* RealityMorpher in Frameworks */ = {isa = PBXBuildFile; productRef = 513DB0AB2A7AB28D0098D767 /* RealityMorpher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +48,10 @@
 		513DB08D2A79AFD60098D767 /* MorphTargetExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MorphTargetExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		513DB0912A79AFD60098D767 /* MorphTargetExampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleUITests.swift; sourceTree = "<group>"; };
 		513DB0932A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		513DB0A02A79B19B0098D767 /* RealityMorpher */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityMorpher; sourceTree = "<group>"; };
+		513DB0A42A7AAF0D0098D767 /* RealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealityView.swift; sourceTree = "<group>"; };
+		513DB0A62A7AB06F0098D767 /* cloth0.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth0.usdz; sourceTree = "<group>"; };
+		513DB0A72A7AB06F0098D767 /* cloth1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth1.usdz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				513DB0AC2A7AB28D0098D767 /* RealityMorpher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,7 +86,9 @@
 				513DB0752A79AFD30098D767 /* MorphTargetExample */,
 				513DB0862A79AFD60098D767 /* MorphTargetExampleTests */,
 				513DB0902A79AFD60098D767 /* MorphTargetExampleUITests */,
+				513DB0A02A79B19B0098D767 /* RealityMorpher */,
 				513DB0742A79AFD30098D767 /* Products */,
+				513DB0AA2A7AB28D0098D767 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,8 +105,11 @@
 		513DB0752A79AFD30098D767 /* MorphTargetExample */ = {
 			isa = PBXGroup;
 			children = (
+				513DB0A62A7AB06F0098D767 /* cloth0.usdz */,
+				513DB0A72A7AB06F0098D767 /* cloth1.usdz */,
 				513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */,
 				513DB0782A79AFD30098D767 /* ContentView.swift */,
+				513DB0A42A7AAF0D0098D767 /* RealityView.swift */,
 				513DB07A2A79AFD60098D767 /* Assets.xcassets */,
 				513DB07C2A79AFD60098D767 /* Preview Content */,
 			);
@@ -127,6 +141,13 @@
 			path = MorphTargetExampleUITests;
 			sourceTree = "<group>";
 		};
+		513DB0AA2A7AB28D0098D767 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,6 +164,9 @@
 			dependencies = (
 			);
 			name = MorphTargetExample;
+			packageProductDependencies = (
+				513DB0AB2A7AB28D0098D767 /* RealityMorpher */,
+			);
 			productName = MorphTargetExample;
 			productReference = 513DB0732A79AFD30098D767 /* MorphTargetExample.app */;
 			productType = "com.apple.product-type.application";
@@ -233,6 +257,8 @@
 			files = (
 				513DB07E2A79AFD60098D767 /* Preview Assets.xcassets in Resources */,
 				513DB07B2A79AFD60098D767 /* Assets.xcassets in Resources */,
+				513DB0A92A7AB06F0098D767 /* cloth1.usdz in Resources */,
+				513DB0A82A7AB06F0098D767 /* cloth0.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				513DB0792A79AFD30098D767 /* ContentView.swift in Sources */,
+				513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */,
 				513DB0772A79AFD30098D767 /* MorphTargetExampleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,10 +446,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MorphTargetExample/Preview Content\"";
-				DEVELOPMENT_TEAM = ST84B2RF4F;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = VG9R2N57GC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -437,6 +466,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = SaltPig.MorphTargetExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Wildcard Development Profile";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -448,10 +479,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MorphTargetExample/Preview Content\"";
-				DEVELOPMENT_TEAM = ST84B2RF4F;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = VG9R2N57GC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -466,6 +499,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = SaltPig.MorphTargetExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Wildcard Development Profile";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -588,6 +623,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		513DB0AB2A7AB28D0098D767 /* RealityMorpher */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RealityMorpher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 513DB06B2A79AFD30098D767 /* Project object */;
 }
