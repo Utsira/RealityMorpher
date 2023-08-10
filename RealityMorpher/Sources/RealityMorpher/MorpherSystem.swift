@@ -7,8 +7,10 @@
 
 import RealityKit
 
+/// System that animates updates to meshes when a `MorpherComponent` has an update
 public final class MorpherSystem: System {
 	
+	/// Do not initialize this yourself! Call `MorpherSystem.registerComponent()` instead.
 	public init(scene: Scene) {}
 	
 	public func update(context: SceneUpdateContext) {

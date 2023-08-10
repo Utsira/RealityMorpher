@@ -1,6 +1,7 @@
 import Foundation
 import RealityKit
 import CoreGraphics
+import RealityMorpherKernels
 
 public struct MorpherComponent: Component {
 	enum Error: String, Swift.Error {
@@ -9,24 +10,28 @@ public struct MorpherComponent: Component {
 		case tooMuchGeometry
 		case invalidNumberOfTargets
 		case couldNotCreateImage
+		case positionsCountNotEqualToNormalsCount
 	}
 	
 	public enum Option: String {
 		case debugNormals
 	}
+	
 	public var weights: SIMD3<Float> = .zero
-	private(set) var weightsVertexCount: SIMD4<Float>
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
+	private static let maxTextureWidth = 8192
+	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
 	
+	private(set) var weightsVertexCount: SIMD4<Float>
 	public init(entity: HasModel, targets: [ModelComponent], options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
-		guard 1...3 ~= targets.count else { throw Error.invalidNumberOfTargets }
+		guard 1...Self.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
 		guard Self.allTargets(targets, areTopologicallyIdenticalToModel: model) else {
 			throw Error.targetsNotTopologicallyIdentical
 		}
 		let vertexCount = model.positionCounts.flatMap { $0 }.reduce(0, +)
-		let maxElements = 8192 * 8192
+		let maxElements = Self.maxTextureWidth * Self.maxTextureWidth
 		guard vertexCount * targets.count * 2 <= maxElements else {
 			throw Error.tooMuchGeometry
 		}
@@ -71,21 +76,16 @@ public struct MorpherComponent: Component {
 	
 	/// Create texture from part positions & normals
 	static private func createTextureForParts(_ parts: [MeshResource.Part], vertCount: Int) throws -> TextureResource {
-		let paddingCount = 3 - parts.count
+		let paddingCount = maxTargetCount - parts.count
 		let padding: [SIMD3<Float>] = Array(repeating: .zero, count: vertCount * paddingCount)
-		
-		let elements = (parts.flatMap { part -> [SIMD3<Float>] in
-			part.positions.elements
-		} + padding
-						+ parts.flatMap { part -> [SIMD3<Float>] in
-			part.normals?.elements ?? []
-		}
-						+ padding)
+		let positions = parts.flatMap(\.positions.elements)
+		let normals = parts.flatMap { $0.normals?.elements ?? [] }
+		guard positions.count == normals.count else { throw Error.positionsCountNotEqualToNormalsCount }
+		let elements = (positions + padding + normals + padding)
 			.map {
 				(Float16($0.x), Float16($0.y), Float16($0.z) )
 			}
-		
-		let width = min(vertCount, 8192)
+		let width = min(vertCount, maxTextureWidth)
 		let (quotient, remainder) = elements.count.quotientAndRemainder(dividingBy: width)
 		let height = remainder == 0 ? quotient : quotient + 1
 		let finalPadding = Array(repeating: (Float16.zero, Float16.zero, Float16.zero), count: (width * height) - elements.count)
@@ -136,7 +136,6 @@ private extension ModelComponent {
 		}
 	}
 }
-
 
 extension SIMD4 {
 	var xyz: SIMD3<Scalar> {
