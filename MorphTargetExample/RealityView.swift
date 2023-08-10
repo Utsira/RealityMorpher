@@ -14,6 +14,9 @@ struct RealityView: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> ARView {
 		let view = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
+		Rotatable.registerComponent()
+		Draggable.registerComponent()
+		
 		content(view.scene)
 		for rotatable in view.scene.performQuery(EntityQuery(where: .has(Rotatable.self) && .has(CollisionComponent.self))) {
 			view.installGestures(.rotation, for: rotatable as! HasCollision)
@@ -24,8 +27,7 @@ struct RealityView: UIViewRepresentable {
 		return view
 	}
 	
-	func updateUIView(_ uiView: ARView, context: Context) {
-		
+	func updateUIView(_ view: ARView, context: Context) {
 	}
 }
 

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		512D494A2A83C47100244033 /* Presenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512D49492A83C47100244033 /* Presenter.swift */; };
+		512D494E2A84D9AD00244033 /* MorphGeometryModifier.metal in Sources */ = {isa = PBXBuildFile; fileRef = 512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */; };
+		512D49522A85357C00244033 /* RealityMorpher in Frameworks */ = {isa = PBXBuildFile; productRef = 512D49512A85357C00244033 /* RealityMorpher */; };
 		513DB0772A79AFD30098D767 /* MorphTargetExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */; };
 		513DB0792A79AFD30098D767 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0782A79AFD30098D767 /* ContentView.swift */; };
 		513DB07B2A79AFD60098D767 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 513DB07A2A79AFD60098D767 /* Assets.xcassets */; };
@@ -18,7 +20,6 @@
 		513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0A42A7AAF0D0098D767 /* RealityView.swift */; };
 		513DB0A82A7AB06F0098D767 /* cloth0.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A62A7AB06F0098D767 /* cloth0.usdz */; };
 		513DB0A92A7AB06F0098D767 /* cloth1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A72A7AB06F0098D767 /* cloth1.usdz */; };
-		513DB0AC2A7AB28D0098D767 /* RealityMorpher in Frameworks */ = {isa = PBXBuildFile; productRef = 513DB0AB2A7AB28D0098D767 /* RealityMorpher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		512D49492A83C47100244033 /* Presenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Presenter.swift; sourceTree = "<group>"; };
+		512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = MorphGeometryModifier.metal; path = RealityMorpher/Sources/RealityMorpher/MorphGeometryModifier.metal; sourceTree = SOURCE_ROOT; };
 		513DB0732A79AFD30098D767 /* MorphTargetExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MorphTargetExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleApp.swift; sourceTree = "<group>"; };
 		513DB0782A79AFD30098D767 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -61,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				513DB0AC2A7AB28D0098D767 /* RealityMorpher in Frameworks */,
+				512D49522A85357C00244033 /* RealityMorpher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +113,7 @@
 				513DB0A72A7AB06F0098D767 /* cloth1.usdz */,
 				513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */,
 				513DB0782A79AFD30098D767 /* ContentView.swift */,
+				512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */,
 				512D49492A83C47100244033 /* Presenter.swift */,
 				513DB0A42A7AAF0D0098D767 /* RealityView.swift */,
 				513DB07A2A79AFD60098D767 /* Assets.xcassets */,
@@ -168,7 +171,7 @@
 			);
 			name = MorphTargetExample;
 			packageProductDependencies = (
-				513DB0AB2A7AB28D0098D767 /* RealityMorpher */,
+				512D49512A85357C00244033 /* RealityMorpher */,
 			);
 			productName = MorphTargetExample;
 			productReference = 513DB0732A79AFD30098D767 /* MorphTargetExample.app */;
@@ -287,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				513DB0792A79AFD30098D767 /* ContentView.swift in Sources */,
+				512D494E2A84D9AD00244033 /* MorphGeometryModifier.metal in Sources */,
 				513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */,
 				512D494A2A83C47100244033 /* Presenter.swift in Sources */,
 				513DB0772A79AFD30098D767 /* MorphTargetExampleApp.swift in Sources */,
@@ -629,7 +633,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		513DB0AB2A7AB28D0098D767 /* RealityMorpher */ = {
+		512D49512A85357C00244033 /* RealityMorpher */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RealityMorpher;
 		};

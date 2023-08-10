@@ -13,7 +13,7 @@ struct ContentView: View {
 	
     var body: some View {
 		RealityView { scene in
-			presenter.setupDebug(scene: scene)
+			presenter.setup(scene: scene)
 		}
 		.onTapGesture {
 			presenter.onTap()
