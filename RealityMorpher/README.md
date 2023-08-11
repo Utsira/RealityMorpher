@@ -11,6 +11,5 @@ Adds Morph Target / Key Shape animations to RealityKit
 
 ### TODO
 
-- animation curves
 - docC
 - different interpolation modes

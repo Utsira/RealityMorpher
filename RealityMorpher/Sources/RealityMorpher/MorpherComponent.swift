@@ -17,13 +17,14 @@ public struct MorpherComponent: Component {
 		case debugNormals
 	}
 	
-	public var weights: SIMD3<Float> = .zero
+	public fileprivate(set) var weights: MorpherWeights = .zero
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
+	fileprivate(set) var weightsVertexCount: SIMD4<Float>
+	fileprivate var animator: MorpherAnimating?
 	private static let maxTextureWidth = 8192
 	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
 	
-	private(set) var weightsVertexCount: SIMD4<Float>
 	public init(entity: HasModel, targets: [ModelComponent], options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
 		guard 1...Self.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
@@ -112,17 +113,25 @@ public struct MorpherComponent: Component {
 			counts == modelCounts
 		}
 	}
+}
 
-	func updated() -> MorpherComponent? {
-		guard weightsVertexCount.xyz != weights else { return nil }
-		var update = self
-		let halfDistanceToTarget = (weights - weightsVertexCount.xyz) * 0.2
-		if length_squared(halfDistanceToTarget) < 0.00001 {
-			update.weightsVertexCount.xyz = weights
+// MARK: - Animation
+
+extension MorpherComponent {
+	public mutating func setTargetWeights(_ target: MorpherWeights, animation: MorpherAnimation = .immediate) {
+		weights = target
+		if #available(iOS 17.0, *) {
+			animator = TimelineAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: target, animation: animation)
 		} else {
-			update.weightsVertexCount.xyz += halfDistanceToTarget
+			animator = LinearAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: target, animation: animation)
 		}
-		return update
+	}
+	
+	func updated(deltaTime: TimeInterval) -> MorpherComponent? {
+		var output = self
+		guard let event = output.animator?.update(with: deltaTime), event.status == .running else { return nil }
+		output.weightsVertexCount.xyz = event.weights.values
+		return output
 	}
 }
 
@@ -133,17 +142,6 @@ private extension ModelComponent {
 			model.parts.map { part in
 				part.positions.count
 			}
-		}
-	}
-}
-
-extension SIMD4 {
-	var xyz: SIMD3<Scalar> {
-		get {
-			SIMD3(x: x, y: y, z: z)
-		}
-		set {
-			self = SIMD4(newValue, w)
 		}
 	}
 }

@@ -15,7 +15,7 @@ public final class MorpherSystem: System {
 	
 	public func update(context: SceneUpdateContext) {
 		for entity in context.scene.performQuery(EntityQuery(where: .has(MorpherComponent.self) && .has(ModelComponent.self))) {
-			guard let morpher = (entity.components[MorpherComponent.self] as? MorpherComponent)?.updated(),
+			guard let morpher = (entity.components[MorpherComponent.self] as? MorpherComponent)?.updated(deltaTime: context.deltaTime),
 				  var model = entity.components[ModelComponent.self] as? ModelComponent
 			else { continue }
 			
