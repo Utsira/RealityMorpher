@@ -2,6 +2,7 @@ import Foundation
 import RealityKit
 import CoreGraphics
 import RealityMorpherKernels
+import Accelerate
 
 public struct MorpherComponent: Component {
 	enum Error: String, Swift.Error {
@@ -57,7 +58,7 @@ public struct MorpherComponent: Component {
 					$0.mesh.contents.models.map { $0 }[submodelId]
 						.parts.map { $0 }[partId]
 				}
-				let textureResource = try Self.createTextureForParts(targetParts, vertCount: vertexCount)
+				let textureResource = try Self.createTextureForPart(part, targetParts: targetParts, vertCount: vertexCount)
 				texResources.append(textureResource)
 				updatedMaterial.custom.texture = CustomMaterial.Texture(textureResource)
 				updatedMaterial.custom.value = [0, 0, 0, Float(part.positions.count)]
@@ -76,20 +77,22 @@ public struct MorpherComponent: Component {
 	}
 	
 	/// Create texture from part positions & normals
-	static private func createTextureForParts(_ parts: [MeshResource.Part], vertCount: Int) throws -> TextureResource {
-		let paddingCount = maxTargetCount - parts.count
-		let padding: [SIMD3<Float>] = Array(repeating: .zero, count: vertCount * paddingCount)
-		let positions = parts.flatMap(\.positions.elements)
-		let normals = parts.flatMap { $0.normals?.elements ?? [] }
+	static private func createTextureForPart(_ base: MeshResource.Part, targetParts: [MeshResource.Part], vertCount: Int) throws -> TextureResource {
+		let paddingCount = maxTargetCount - targetParts.count
+		let padding: [Float] = Array(repeating: .zero, count: vertCount * 3 * paddingCount)
+		let positions: [Float] = targetParts.flatMap(\.positions.flattenedElements)
+		let basePositions: [Float] = Array(repeating: base.positions.flattenedElements, count: targetParts.count).flatMap { $0 }
+		let offsets: [Float] = vDSP.subtract(positions, basePositions)
+		let normals: [Float] = targetParts.flatMap {
+			$0.normals?.flattenedElements ?? []
+		}
 		guard positions.count == normals.count else { throw Error.positionsCountNotEqualToNormalsCount }
-		let elements = (positions + padding + normals + padding)
-			.map {
-				(Float16($0.x), Float16($0.y), Float16($0.z) )
-			}
+		let elements = (offsets + padding + normals + padding).map { Float16($0) }
+		let pixelcount = elements.count / 3
 		let width = min(vertCount, maxTextureWidth)
-		let (quotient, remainder) = elements.count.quotientAndRemainder(dividingBy: width)
+		let (quotient, remainder) = pixelcount.quotientAndRemainder(dividingBy: width)
 		let height = remainder == 0 ? quotient : quotient + 1
-		let finalPadding = Array(repeating: (Float16.zero, Float16.zero, Float16.zero), count: (width * height) - elements.count)
+		let finalPadding = Array(repeating: Float16.zero, count: (width - remainder) * 3)
 		let elementsWithPadding = elements + finalPadding
 		let data = elementsWithPadding.withUnsafeBytes {
 			Data($0)
@@ -143,5 +146,11 @@ private extension ModelComponent {
 				part.positions.count
 			}
 		}
+	}
+}
+
+private extension MeshBuffer where Element == SIMD3<Float> {
+	var flattenedElements: [Float] {
+		elements.flatMap { [$0.x, $0.y, $0.z] }
 	}
 }

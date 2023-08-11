@@ -20,14 +20,13 @@ void morph_geometry_modifier(realitykit::geometry_parameters params)
 	uint vertex_id = params.geometry().vertex_id();
 	
 	float3 output_normal = params.geometry().normal();
-	float3 base_position = params.geometry().model_position();
 	float3 position_offset = float3(0);
 	uint tex_width = params.textures().custom().get_width();
 	
 	for (uint target_id = 0; target_id < MorpherConstant::MorpherConstantMaxTargetCount; target_id ++) {
 		uint position_id = vertex_id + (target_id * vertex_count);
 		uint normal_id = vertex_id + ((MorpherConstant::MorpherConstantMaxTargetCount + target_id) * vertex_count);
-		float3 target_offset = float3(params.textures().custom().read(uint2(position_id % tex_width, position_id / tex_width)).xyz) - base_position;
+		float3 target_offset = float3(params.textures().custom().read(uint2(position_id % tex_width, position_id / tex_width)).xyz);
 		float3 target_normal = float3(params.textures().custom().read(uint2(normal_id % tex_width, normal_id / tex_width)).xyz);
 		float weight = weights[target_id];
 		position_offset = mix(position_offset, target_offset, weight);
