@@ -7,12 +7,13 @@
 
 import RealityKit
 
-/// System that animates updates to meshes when a `MorpherComponent` has an update
+/// System that animates updates to meshes when a ``MorpherComponent`` has an update
 public final class MorpherSystem: System {
 	
-	/// Do not initialize this yourself! Call `MorpherSystem.registerComponent()` instead.
+	/// Do not initialize this yourself. Call ``MorpherSystem.registerSystem()`` instead.
 	public init(scene: Scene) {}
 	
+	/// Do not call this method, RealityKit will call  it every tick.
 	public func update(context: SceneUpdateContext) {
 		for entity in context.scene.performQuery(EntityQuery(where: .has(MorpherComponent.self) && .has(ModelComponent.self))) {
 			guard let morpher = (entity.components[MorpherComponent.self] as? MorpherComponent)?.updated(deltaTime: context.deltaTime),

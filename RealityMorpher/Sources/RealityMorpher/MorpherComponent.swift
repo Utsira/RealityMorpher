@@ -4,21 +4,40 @@ import CoreGraphics
 import RealityMorpherKernels
 import Accelerate
 
+/// Add this component to a `ModelEntity` to enable morph target (AKA shape key or blend shape) animations.
 public struct MorpherComponent: Component {
-	enum Error: String, Swift.Error {
+	
+	/// Errors thrown from ``MorpherComponent/init(entity:targets:options:)``
+	public enum Error: String, Swift.Error {
+		/// The `entity` passed to ``MorpherComponent/init(entity:targets:options:)`` does not have a `ModelComponent`
 		case missingBaseMesh
+		
+		/// The `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
 		case targetsNotTopologicallyIdentical
+		
+		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` exceeds the maximum of  33,554,432
 		case tooMuchGeometry
+		
+		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` must contain 1, 2, or 3 elements
 		case invalidNumberOfTargets
+		
+		/// Morpher texture creation failed for some reason. Please check the logs for CGImage related failure and raise an issue on the repository
 		case couldNotCreateImage
+		
+		/// The number of normals is different from the number of vertices. All vertices of the model should contain normals.
 		case positionsCountNotEqualToNormalsCount
 	}
 	
 	public enum Option: String {
+		/// Display normals as vertex colors
 		case debugNormals
 	}
 	
+	/// The weights for each of the targets passed to ``init(entity:targets:options:)``.
+	///
+	/// Use ``setTargetWeights(_:animation:)`` to update thse with an animation
 	public fileprivate(set) var weights: MorpherWeights = .zero
+	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
 	fileprivate(set) var weightsVertexCount: SIMD4<Float>
@@ -26,6 +45,14 @@ public struct MorpherComponent: Component {
 	private static let maxTextureWidth = 8192
 	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
 	
+	/// Initialises a new MorpherComponent for animating deforms to a model's geometry.
+	///
+	/// - Parameters:
+	///   - entity: the ``ModelEntity`` that this component will be added to. This entity's materials will all be converted into ``CustomMaterial``s in order to deform the geometry
+	///   - targets: an array of target geometries that can be morphed to. There must be between 1 and 3 geometries in this array. Each geometry must be topologically identical to the base entity's model (in other words have the same number of submodels, composed of the same number of parts, each of which must have the same number of vertices)
+	///   - options: a set of ``Option`` flags that can be passed, Defaults to an empty set.
+	///
+	/// - Throws: See ``Error`` for errors thrown from this initialiser
 	public init(entity: HasModel, targets: [ModelComponent], options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
 		guard 1...Self.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
@@ -121,12 +148,16 @@ public struct MorpherComponent: Component {
 // MARK: - Animation
 
 extension MorpherComponent {
-	public mutating func setTargetWeights(_ target: MorpherWeights, animation: MorpherAnimation = .immediate) {
-		weights = target
+	/// Updates the ``weights`` for the morph `targets` passed to ``init(entity:targets:options:)``
+	/// - Parameters:
+	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
+	///   - animation: the animation with which the update to the target ``weights`` will be applied
+	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation = .immediate) {
+		weights = targetWeights
 		if #available(iOS 17.0, *) {
-			animator = TimelineAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: target, animation: animation)
+			animator = TimelineAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: targetWeights, animation: animation)
 		} else {
-			animator = LinearAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: target, animation: animation)
+			animator = LinearAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: targetWeights, animation: animation)
 		}
 	}
 	
