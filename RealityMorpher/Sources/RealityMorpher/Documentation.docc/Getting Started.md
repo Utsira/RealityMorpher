@@ -28,12 +28,8 @@ do {
 
 ### Blending between Morph Targets
 
-Animate between the different Morph Targets by assigning a weight for each target. Up to 3 weights are contained in the ``MorpherWeights`` object. A weight of 0
+Animate between the different Morph Targets by assigning a weight for each target. Up to 3 weights are passed as a ``SIMD3<Float>``. A weight of 0
 - ``MorpherComponent/setTargetWeights(_:animation:)``
-
-### Describing the weight of each target
-
-- ``MorpherWeights/init(_:)``
 
 ### Specifying how a change in weight should be animated
 

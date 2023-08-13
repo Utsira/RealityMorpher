@@ -66,6 +66,6 @@ struct LinearAnimator: MorpherAnimating {
 		}
 		timeElapsed += deltaTime
 		let value = mix(origin.values, target.values, t: Float(timeElapsed / animation.duration))
-		return MorpherEvent(status: .running, weights: MorpherWeights(value))
+		return MorpherEvent(status: .running, weights: MorpherWeights(values: value))
 	}
 }

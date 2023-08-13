@@ -22,8 +22,9 @@ struct MorpherSystem: System {
 			
 			model.materials = model.materials.enumerated().map { index, material in
 				guard var customMaterial = material as? CustomMaterial else { return material }
-				customMaterial.custom.value = morpher.weightsVertexCount
-				customMaterial.custom.texture = .init(morpher.textureResources[index])
+				let posTexture = morpher.textureResources[index]
+				customMaterial.custom.value = .init(morpher.currentWeights, Float(posTexture.vertexCount))
+				customMaterial.custom.texture = .init(posTexture.resource)
 				return customMaterial
 			}
 			entity.components.set(model)

@@ -33,15 +33,21 @@ public struct MorpherComponent: Component {
 		case debugNormals
 	}
 	
-	/// The weights for each of the targets passed to ``init(entity:targets:options:)``.
+	struct PositionNormalTexture {
+		let resource: TextureResource
+		let vertexCount: Int
+	}
+	
+	/// The weights for each of the targets
 	///
-	/// Use ``setTargetWeights(_:animation:)`` to update thse with an animation
-	public fileprivate(set) var weights: MorpherWeights = .zero
+	/// Use ``setTargetWeights(_:animation:)`` to update these with an animation
+	public var weights: [Float] { [targetWeights.x, targetWeights.y, targetWeights.z] }
 	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
-	let textureResources: [TextureResource]
+	let textureResources: [PositionNormalTexture]
 	
-	private(set) var weightsVertexCount: SIMD4<Float>
+	private var targetWeights: MorpherWeights
+	private(set) var currentWeights: SIMD3<Float>
 	private var animator: MorpherAnimating?
 	private static let maxTextureWidth = 8192
 	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
@@ -51,10 +57,11 @@ public struct MorpherComponent: Component {
 	/// - Parameters:
 	///   - entity: the `ModelEntity` that this component will be added to. This entity's materials will all be converted into `CustomMaterial`s in order to deform the geometry
 	///   - targets: an array of target geometries that can be morphed to. There must be between 1 and 3 geometries in this array. Each geometry must be topologically identical to the base entity's model (in other words have the same number of submodels, composed of the same number of parts, each of which must have the same number of vertices)
+	///   - weights: an array of weights, describing the extent to which each target in the `targets` parameter should be applied. Typically these are in the range 0 to 1, 0 indicating the target is not applied at all, 1 indicating it is fully applied. Each element corresponds to the element at the same index in the `targets` property. If this parameter is omitted, the weights will default to zero.
 	///   - options: a set of ``Option`` flags that can be passed, Defaults to an empty set.
 	///
 	/// - Throws: See ``Error`` for errors thrown from this initialiser
-	public init(entity: HasModel, targets: [ModelComponent], options: Set<Option> = []) throws {
+	public init(entity: HasModel, targets: [ModelComponent], weights: [Float]? = nil, options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
 		guard 1...Self.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
 		guard Self.allTargets(targets, areTopologicallyIdenticalToModel: model) else {
@@ -65,8 +72,10 @@ public struct MorpherComponent: Component {
 		guard vertexCount * targets.count * 2 <= maxElements else {
 			throw Error.tooMuchGeometry
 		}
-		weightsVertexCount = .init(.zero, Float(vertexCount))
-		var texResources: [TextureResource] = []
+		let weights = MorpherWeights(weights ?? [])
+		targetWeights = weights
+		currentWeights = weights.values
+		var texResources: [PositionNormalTexture] = []
 
 		// Because we have no "submesh index" or "part index" within the geometry modifier, each part of the mesh needs to have its own material, where in the original model they might have shared materials
 		var updatedContents = MeshResource.Contents()
@@ -86,10 +95,11 @@ public struct MorpherComponent: Component {
 					$0.mesh.contents.models.map { $0 }[submodelId]
 						.parts.map { $0 }[partId]
 				}
-				let textureResource = try Self.createTextureForPart(part, targetParts: targetParts, vertCount: vertexCount)
-				texResources.append(textureResource)
+				let vertCountForPart = part.positions.count
+				let textureResource = try Self.createTextureForPart(part, targetParts: targetParts, vertCount: vertCountForPart)
+				texResources.append(PositionNormalTexture(resource: textureResource, vertexCount: vertCountForPart))
 				updatedMaterial.custom.texture = CustomMaterial.Texture(textureResource)
-				updatedMaterial.custom.value = [0, 0, 0, Float(part.positions.count)]
+				updatedMaterial.custom.value = .init(weights.values, Float(vertCountForPart))
 				let materialIndex = updatedMaterials.count
 				updatedMaterials.append(updatedMaterial)
 				var newPart = part
@@ -151,19 +161,19 @@ public struct MorpherComponent: Component {
 	/// - Parameters:
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
 	///   - animation: the animation with which the update to the target ``weights`` will be applied
-	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation = .immediate) {
-		weights = targetWeights
+	public mutating func setTargetWeights(_ targetWeights: [Float], animation: MorpherAnimation = .immediate) {
+		self.targetWeights = MorpherWeights(targetWeights)
 		if #available(iOS 17.0, *) {
-			animator = TimelineAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: targetWeights, animation: animation)
+			animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: self.targetWeights, animation: animation)
 		} else {
-			animator = LinearAnimator(origin: MorpherWeights(weightsVertexCount.xyz), target: targetWeights, animation: animation)
+			animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: self.targetWeights, animation: animation)
 		}
 	}
 	
 	func updated(deltaTime: TimeInterval) -> MorpherComponent? {
 		var output = self
 		guard let event = output.animator?.update(with: deltaTime), event.status == .running else { return nil }
-		output.weightsVertexCount.xyz = event.weights.values
+		output.currentWeights = event.weights.values
 		return output
 	}
 }

@@ -12,7 +12,6 @@ Adds Morph Target / Key Shape animations to RealityKit
 ### TODO
 
 - docC
-- Don't expose MorpherWeights
 - Use tuples instead of array? (target t0: ModelComponent, _ t1: ModelComponnet? = nil, _ t2: ModelComponnet? = nil )
 - MorpherAnimation be an enum?
 - unit tests
