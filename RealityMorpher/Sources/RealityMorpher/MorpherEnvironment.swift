@@ -20,5 +20,6 @@ final class MorpherEnvironment {
 		let library = try! device.makeDefaultLibrary(bundle: .kernelsModule())
 		morphGeometryModifier = CustomMaterial.GeometryModifier(named: "morph_geometry_modifier", in: library)
 		debugShader = CustomMaterial.SurfaceShader(named: "debug_normals", in: library)
+		MorpherSystem.registerSystem()
 	}
 }

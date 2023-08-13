@@ -40,15 +40,16 @@ public struct MorpherComponent: Component {
 	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
-	fileprivate(set) var weightsVertexCount: SIMD4<Float>
-	fileprivate var animator: MorpherAnimating?
+	
+	private(set) var weightsVertexCount: SIMD4<Float>
+	private var animator: MorpherAnimating?
 	private static let maxTextureWidth = 8192
 	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
 	
 	/// Initialises a new MorpherComponent for animating deforms to a model's geometry.
 	///
 	/// - Parameters:
-	///   - entity: the ``ModelEntity`` that this component will be added to. This entity's materials will all be converted into ``CustomMaterial``s in order to deform the geometry
+	///   - entity: the `ModelEntity` that this component will be added to. This entity's materials will all be converted into `CustomMaterial`s in order to deform the geometry
 	///   - targets: an array of target geometries that can be morphed to. There must be between 1 and 3 geometries in this array. Each geometry must be topologically identical to the base entity's model (in other words have the same number of submodels, composed of the same number of parts, each of which must have the same number of vertices)
 	///   - options: a set of ``Option`` flags that can be passed, Defaults to an empty set.
 	///
@@ -143,11 +144,9 @@ public struct MorpherComponent: Component {
 			counts == modelCounts
 		}
 	}
-}
-
-// MARK: - Animation
-
-extension MorpherComponent {
+	
+	// MARK: - Animation
+	
 	/// Updates the ``weights`` for the morph `targets` passed to ``init(entity:targets:options:)``
 	/// - Parameters:
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.

@@ -14,7 +14,6 @@ final class Presenter {
 	private var clothEntity: ModelEntity?
 	
 	init() {
-		MorpherSystem.registerSystem()
 		MorpherComponent.registerComponent()
 	}
 	
