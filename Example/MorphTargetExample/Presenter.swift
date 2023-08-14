@@ -63,7 +63,7 @@ final class Presenter {
 	func onTap() {
 		guard var morpherComponent = clothEntity?.components[MorpherComponent.self] as? MorpherComponent else { return }
 		let currentWeight = morpherComponent.weights[0]
-		morpherComponent.setTargetWeights([1 - currentWeight, 0, 0], animation: MorpherAnimation(duration: 1, mode: .spring(bounce: 0.5)))
+		morpherComponent.setTargetWeights([1 - currentWeight, 0, 0], animation: .spring(duration: 1, bounce: 0.5))
 		clothEntity?.components.set(morpherComponent)
 	}
 }

@@ -7,28 +7,6 @@ import SwiftUI
 
 /// Add this component to a `ModelEntity` to enable morph target (AKA shape key or blend shape) animations.
 public struct MorpherComponent: Component {
-	
-	/// Errors thrown from ``MorpherComponent/init(entity:targets:weights:options:)``
-	public enum Error: String, Swift.Error {
-		/// The `entity` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` does not have a `ModelComponent`
-		case missingBaseMesh
-		
-		/// The `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
-		case targetsNotTopologicallyIdentical
-		
-		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` exceeds the maximum of  33,554,432
-		case tooMuchGeometry
-		
-		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` must contain 1, 2, or 3 elements
-		case invalidNumberOfTargets
-		
-		/// Morpher texture creation failed for some reason. Please check the logs for CGImage related failure and raise an issue on the repository
-		case couldNotCreateImage
-		
-		/// The number of normals is different from the number of vertices. All vertices of the model should contain normals.
-		case positionsCountNotEqualToNormalsCount
-	}
-	
 	/// Debug options
 	public enum Option: String {
 		/// Display normals as vertex colors
@@ -37,7 +15,7 @@ public struct MorpherComponent: Component {
 	
 	/// The weights for each of the targets, not accounting for any animations that are in flight.
 	///
-	/// When you set a desired weight using ``setTargetWeights(_:animation:)``, this ``weight`` parameter will immediately reflect that change, regardless of what animation duration has been set
+	/// When you set a desired weight using ``setTargetWeights(_:animation:)``, this ``weights`` parameter will immediately reflect that change, regardless of what animation duration has been set
 	public private(set) var weights: MorpherWeights
 	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
@@ -156,18 +134,23 @@ public struct MorpherComponent: Component {
 	}
 	
 	// MARK: - Animation
+	/// Updates the ``weights`` for the morph targets, optionally with a linear animation
+	/// - Parameters:
+	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
+	///   - duration: duration of the animation with which the update to the target ``weights`` will be applied. Defaults to 0.
+	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, duration: TimeInterval = 0) {
+		weights = targetWeights
+		animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, duration: duration)
+	}
 	
-	/// Updates the ``weights`` for the morph targets.
+	/// Updates the ``weights`` for the morph targets, with advanced animation options
 	/// - Parameters:
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
 	///   - animation: the animation with which the update to the target ``weights`` will be applied
-	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation = .immediate) {
+	@available(iOS 17.0, macOS 14.0, *)
+	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation) {
 		weights = targetWeights
-		if #available(iOS 17.0, *) {
-			animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
-		} else {
-			animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
-		}
+		animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
 	}
 	
 	/// Updates the ``weights`` for the morph targets using a custom timeline animation
@@ -187,6 +170,34 @@ public struct MorpherComponent: Component {
 		return output
 	}
 }
+
+// MARK: - MorpherComponent.Error
+
+public extension MorpherComponent {
+	/// Errors thrown from ``MorpherComponent/init(entity:targets:weights:options:)``
+	enum Error: String, Swift.Error {
+		/// The `entity` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` does not have a `ModelComponent`
+		case missingBaseMesh
+		
+		/// The `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
+		case targetsNotTopologicallyIdentical
+		
+		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` exceeds the maximum of  33,554,432
+		case tooMuchGeometry
+		
+		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` must contain 1, 2, or 3 elements
+		case invalidNumberOfTargets
+		
+		/// Morpher texture creation failed for some reason. Please check the logs for CGImage related failure and raise an issue on the repository
+		case couldNotCreateImage
+		
+		/// The number of normals is different from the number of vertices. All vertices of the model should contain normals.
+		case positionsCountNotEqualToNormalsCount
+	}
+}
+
+
+// MARK: - Helpers
 
 private extension ModelComponent {
 	/// A nested array of the vertex counts for each part within each submodel

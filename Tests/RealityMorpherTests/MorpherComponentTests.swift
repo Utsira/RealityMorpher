@@ -71,7 +71,11 @@ final class MorpherComponentTests: XCTestCase {
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 3, depth: 1), materials: [material])
 		var sut = try MorpherComponent(entity: base, targets: [target])
-		sut.setTargetWeights([1], animation: MorpherAnimation(duration: 2, mode: .cubic))
+		if #available(iOS 17.0, macOS 14.0, *) {
+			sut.setTargetWeights([1], animation: .cubic(duration: 2))
+		} else {
+			sut.setTargetWeights([1], duration: 2)
+		}
 		XCTAssertEqual(sut.weights.values, [1, 0, 0, 0]) // immediately reports target weight
 		sut = try XCTUnwrap(sut.updated(deltaTime: 1))
 		XCTAssertEqual(sut.currentWeights, [0.5, 0, 0, 0]) // midpoint of the animation

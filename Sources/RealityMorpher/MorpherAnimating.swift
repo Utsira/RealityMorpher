@@ -27,13 +27,13 @@ struct TimelineAnimator: MorpherAnimating {
 	
 	init(origin: MorpherWeights, target: MorpherWeights, animation: MorpherAnimation) {
 		timeline = KeyframeTimeline(initialValue: origin) {
-			switch animation.mode {
-			case .linear:
-				LinearKeyframe(target, duration: animation.duration)
-			case .cubic:
-				CubicKeyframe(target, duration: animation.duration)
-			case .spring(let bounce):
-				SpringKeyframe(target, spring: Spring(duration: animation.duration, bounce: bounce))
+			switch animation {
+			case .linear(let duration):
+				LinearKeyframe(target, duration: duration)
+			case .cubic(let duration):
+				CubicKeyframe(target, duration: duration)
+			case let .spring(duration, bounce):
+				SpringKeyframe(target, spring: Spring(duration: duration, bounce: bounce))
 			}
 		}
 	}
@@ -56,20 +56,20 @@ struct LinearAnimator: MorpherAnimating {
 	private var timeElapsed: TimeInterval = .zero
 	private let origin: MorpherWeights
 	private let target: MorpherWeights
-	private let animation: MorpherAnimation
+	private let duration: TimeInterval
 	
-	init(origin: MorpherWeights, target: MorpherWeights, animation: MorpherAnimation) {
+	init(origin: MorpherWeights, target: MorpherWeights, duration: TimeInterval) {
 		self.origin = origin
 		self.target = target
-		self.animation = animation
+		self.duration = duration
 	}
 	
 	mutating func update(with deltaTime: TimeInterval) -> MorpherEvent {
-		if timeElapsed >= animation.duration {
+		if timeElapsed >= duration {
 			return MorpherEvent(status: .completed, weights: target)
 		}
 		timeElapsed += deltaTime
-		let value = mix(origin.values, target.values, t: Float(timeElapsed / animation.duration))
+		let value = mix(origin.values, target.values, t: Float(timeElapsed / duration))
 		return MorpherEvent(status: .running, weights: MorpherWeights(values: value))
 	}
 }
