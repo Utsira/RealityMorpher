@@ -31,4 +31,8 @@ do {
 Animate between the different Morph Targets by assigning a weight for each target. Up to 4 weights are passed in a ``MorphWeights`` object. A weight of 0 means the corresponding target has no influence at all, while a weight of 1.0 means it is fully applied.
 - ``MorphComponent/setTargetWeights(_:animation:)``
 
+### Limitations
 
+- A maximum of 4 morph targets can be added to any Entity
+- The morph targets must all be topologically identical to the base model (in other words have the same number of submodels, parts, and vertices)
+- The 4 targets cannot have more than 33,554,432 vertices combined
