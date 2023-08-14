@@ -23,22 +23,6 @@
         "identifier" : "513DB0822A79AFD60098D767",
         "name" : "MorphTargetExampleTests"
       }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:MorphTargetExample.xcodeproj",
-        "identifier" : "513DB08C2A79AFD60098D767",
-        "name" : "MorphTargetExampleUITests"
-      }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:RealityMorpher",
-        "identifier" : "RealityMorpherTests",
-        "name" : "RealityMorpherTests"
-      }
     }
   ],
   "version" : 1

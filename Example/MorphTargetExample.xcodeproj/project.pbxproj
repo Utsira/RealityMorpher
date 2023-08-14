@@ -3,23 +3,20 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		512D494A2A83C47100244033 /* Presenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512D49492A83C47100244033 /* Presenter.swift */; };
-		512D494E2A84D9AD00244033 /* MorphGeometryModifier.metal in Sources */ = {isa = PBXBuildFile; fileRef = 512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */; };
-		512D49522A85357C00244033 /* RealityMorpher in Frameworks */ = {isa = PBXBuildFile; productRef = 512D49512A85357C00244033 /* RealityMorpher */; };
 		513DB0772A79AFD30098D767 /* MorphTargetExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */; };
 		513DB0792A79AFD30098D767 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0782A79AFD30098D767 /* ContentView.swift */; };
 		513DB07B2A79AFD60098D767 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 513DB07A2A79AFD60098D767 /* Assets.xcassets */; };
 		513DB07E2A79AFD60098D767 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 513DB07D2A79AFD60098D767 /* Preview Assets.xcassets */; };
 		513DB0882A79AFD60098D767 /* MorphTargetExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0872A79AFD60098D767 /* MorphTargetExampleTests.swift */; };
-		513DB0922A79AFD60098D767 /* MorphTargetExampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0912A79AFD60098D767 /* MorphTargetExampleUITests.swift */; };
-		513DB0942A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0932A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift */; };
 		513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513DB0A42A7AAF0D0098D767 /* RealityView.swift */; };
 		513DB0A82A7AB06F0098D767 /* cloth0.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A62A7AB06F0098D767 /* cloth0.usdz */; };
 		513DB0A92A7AB06F0098D767 /* cloth1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 513DB0A72A7AB06F0098D767 /* cloth1.usdz */; };
+		5170B3C32A8A7ACF006B590C /* RealityMorpher in Frameworks */ = {isa = PBXBuildFile; productRef = 5170B3C22A8A7ACF006B590C /* RealityMorpher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,7 +38,6 @@
 
 /* Begin PBXFileReference section */
 		512D49492A83C47100244033 /* Presenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Presenter.swift; sourceTree = "<group>"; };
-		512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = MorphGeometryModifier.metal; path = RealityMorpher/Sources/RealityMorpherKernels/MorphGeometryModifier.metal; sourceTree = SOURCE_ROOT; };
 		513DB0732A79AFD30098D767 /* MorphTargetExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MorphTargetExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleApp.swift; sourceTree = "<group>"; };
 		513DB0782A79AFD30098D767 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -50,9 +46,6 @@
 		513DB0832A79AFD60098D767 /* MorphTargetExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MorphTargetExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		513DB0872A79AFD60098D767 /* MorphTargetExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleTests.swift; sourceTree = "<group>"; };
 		513DB08D2A79AFD60098D767 /* MorphTargetExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MorphTargetExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		513DB0912A79AFD60098D767 /* MorphTargetExampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleUITests.swift; sourceTree = "<group>"; };
-		513DB0932A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphTargetExampleUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		513DB0A02A79B19B0098D767 /* RealityMorpher */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityMorpher; sourceTree = "<group>"; };
 		513DB0A42A7AAF0D0098D767 /* RealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealityView.swift; sourceTree = "<group>"; };
 		513DB0A62A7AB06F0098D767 /* cloth0.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth0.usdz; sourceTree = "<group>"; };
 		513DB0A72A7AB06F0098D767 /* cloth1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth1.usdz; sourceTree = "<group>"; };
@@ -64,7 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				512D49522A85357C00244033 /* RealityMorpher in Frameworks */,
+				5170B3C32A8A7ACF006B590C /* RealityMorpher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,8 +83,6 @@
 			children = (
 				513DB0752A79AFD30098D767 /* MorphTargetExample */,
 				513DB0862A79AFD60098D767 /* MorphTargetExampleTests */,
-				513DB0902A79AFD60098D767 /* MorphTargetExampleUITests */,
-				513DB0A02A79B19B0098D767 /* RealityMorpher */,
 				513DB0742A79AFD30098D767 /* Products */,
 				513DB0AA2A7AB28D0098D767 /* Frameworks */,
 			);
@@ -114,7 +105,6 @@
 				513DB0A72A7AB06F0098D767 /* cloth1.usdz */,
 				513DB0762A79AFD30098D767 /* MorphTargetExampleApp.swift */,
 				513DB0782A79AFD30098D767 /* ContentView.swift */,
-				512D494D2A84D9AD00244033 /* MorphGeometryModifier.metal */,
 				512D49492A83C47100244033 /* Presenter.swift */,
 				513DB0A42A7AAF0D0098D767 /* RealityView.swift */,
 				513DB07A2A79AFD60098D767 /* Assets.xcassets */,
@@ -138,15 +128,6 @@
 				513DB0872A79AFD60098D767 /* MorphTargetExampleTests.swift */,
 			);
 			path = MorphTargetExampleTests;
-			sourceTree = "<group>";
-		};
-		513DB0902A79AFD60098D767 /* MorphTargetExampleUITests */ = {
-			isa = PBXGroup;
-			children = (
-				513DB0912A79AFD60098D767 /* MorphTargetExampleUITests.swift */,
-				513DB0932A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift */,
-			);
-			path = MorphTargetExampleUITests;
 			sourceTree = "<group>";
 		};
 		513DB0AA2A7AB28D0098D767 /* Frameworks */ = {
@@ -173,7 +154,7 @@
 			);
 			name = MorphTargetExample;
 			packageProductDependencies = (
-				512D49512A85357C00244033 /* RealityMorpher */,
+				5170B3C22A8A7ACF006B590C /* RealityMorpher */,
 			);
 			productName = MorphTargetExample;
 			productReference = 513DB0732A79AFD30098D767 /* MorphTargetExample.app */;
@@ -248,6 +229,9 @@
 				Base,
 			);
 			mainGroup = 513DB06A2A79AFD30098D767;
+			packageReferences = (
+				5170B3C12A8A7ACF006B590C /* XCLocalSwiftPackageReference ".." */,
+			);
 			productRefGroup = 513DB0742A79AFD30098D767 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -293,7 +277,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				513DB0792A79AFD30098D767 /* ContentView.swift in Sources */,
-				512D494E2A84D9AD00244033 /* MorphGeometryModifier.metal in Sources */,
 				513DB0A52A7AAF0D0098D767 /* RealityView.swift in Sources */,
 				512D494A2A83C47100244033 /* Presenter.swift in Sources */,
 				513DB0772A79AFD30098D767 /* MorphTargetExampleApp.swift in Sources */,
@@ -312,8 +295,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				513DB0922A79AFD60098D767 /* MorphTargetExampleUITests.swift in Sources */,
-				513DB0942A79AFD60098D767 /* MorphTargetExampleUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -640,8 +621,15 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		5170B3C12A8A7ACF006B590C /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		512D49512A85357C00244033 /* RealityMorpher */ = {
+		5170B3C22A8A7ACF006B590C /* RealityMorpher */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RealityMorpher;
 		};
