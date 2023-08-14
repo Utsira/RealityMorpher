@@ -1,5 +1,5 @@
 //
-//  MorpherAnimating.swift
+//  MorphAnimating.swift
 //  
 //
 //  Created by Oliver Dew on 11/08/2023.
@@ -8,24 +8,24 @@
 import simd
 import SwiftUI
 
-protocol MorpherAnimating {
-	mutating func update(with deltaTime: TimeInterval) -> MorpherEvent
+protocol MorphAnimating {
+	mutating func update(with deltaTime: TimeInterval) -> MorphEvent
 }
 
-struct MorpherEvent {
+struct MorphEvent {
 	enum Status {
 		case running, completed
 	}
 	let status: Status
-	let weights: MorpherWeights
+	let weights: MorphWeights
 }
 
 @available(iOS 17.0, macOS 14.0, *)
-struct TimelineAnimator: MorpherAnimating {
-	let timeline: KeyframeTimeline<MorpherWeights>
+struct TimelineAnimator: MorphAnimating {
+	let timeline: KeyframeTimeline<MorphWeights>
 	private var timeElapsed: TimeInterval = .zero
 	
-	init(origin: MorpherWeights, target: MorpherWeights, animation: MorpherAnimation) {
+	init(origin: MorphWeights, target: MorphWeights, animation: MorphAnimation) {
 		timeline = KeyframeTimeline(initialValue: origin) {
 			switch animation {
 			case .linear(let duration):
@@ -38,38 +38,38 @@ struct TimelineAnimator: MorpherAnimating {
 		}
 	}
 	
-	init(origin: MorpherWeights, @KeyframesBuilder<MorpherWeights> animations: () -> some Keyframes<MorpherWeights>) {
+	init(origin: MorphWeights, @KeyframesBuilder<MorphWeights> animations: () -> some Keyframes<MorphWeights>) {
 		timeline = KeyframeTimeline(initialValue: origin, content: animations)
 	}
 	
-	mutating func update(with deltaTime: TimeInterval) -> MorpherEvent {
+	mutating func update(with deltaTime: TimeInterval) -> MorphEvent {
 		if timeElapsed >= timeline.duration {
-			return MorpherEvent(status: .completed, weights: timeline.value(progress: 1))
+			return MorphEvent(status: .completed, weights: timeline.value(progress: 1))
 		}
 		timeElapsed += deltaTime
 		let value = timeline.value(time: timeElapsed)
-		return MorpherEvent(status: .running, weights: value)
+		return MorphEvent(status: .running, weights: value)
 	}
 }
 
-struct LinearAnimator: MorpherAnimating {
+struct LinearAnimator: MorphAnimating {
 	private var timeElapsed: TimeInterval = .zero
-	private let origin: MorpherWeights
-	private let target: MorpherWeights
+	private let origin: MorphWeights
+	private let target: MorphWeights
 	private let duration: TimeInterval
 	
-	init(origin: MorpherWeights, target: MorpherWeights, duration: TimeInterval) {
+	init(origin: MorphWeights, target: MorphWeights, duration: TimeInterval) {
 		self.origin = origin
 		self.target = target
 		self.duration = duration
 	}
 	
-	mutating func update(with deltaTime: TimeInterval) -> MorpherEvent {
+	mutating func update(with deltaTime: TimeInterval) -> MorphEvent {
 		if timeElapsed >= duration {
-			return MorpherEvent(status: .completed, weights: target)
+			return MorphEvent(status: .completed, weights: target)
 		}
 		timeElapsed += deltaTime
 		let value = mix(origin.values, target.values, t: Float(timeElapsed / duration))
-		return MorpherEvent(status: .running, weights: MorpherWeights(values: value))
+		return MorphEvent(status: .running, weights: MorphWeights(values: value))
 	}
 }

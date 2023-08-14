@@ -1,5 +1,5 @@
 //
-//  MorpherAnimation.swift
+//  MorphAnimation.swift
 //
 //
 //  Created by Oliver Dew on 11/08/2023.
@@ -9,7 +9,7 @@ import Foundation
 
 /// Describes how a change in morph target weighting should be animated
 @available(iOS 17.0, macOS 14.0, *)
-public enum MorpherAnimation {
+public enum MorphAnimation {
 	case linear(duration: TimeInterval)
 	case cubic(duration: TimeInterval)
 	
@@ -19,5 +19,5 @@ public enum MorpherAnimation {
 	case spring(duration: TimeInterval, bounce: Double = 0.2)
 	
 	/// Change in weights is applied immediately with no animation
-	public static var noAnimation: MorpherAnimation { .linear(duration: 0) }
+	public static var noAnimation: MorphAnimation { .linear(duration: 0) }
 }

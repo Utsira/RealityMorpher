@@ -6,7 +6,7 @@ import Accelerate
 import SwiftUI
 
 /// Add this component to a `ModelEntity` to enable morph target (AKA shape key or blend shape) animations.
-public struct MorpherComponent: Component {
+public struct MorphComponent: Component {
 	/// Debug options
 	public enum Option: String {
 		/// Display normals as vertex colors
@@ -16,16 +16,16 @@ public struct MorpherComponent: Component {
 	/// The weights for each of the targets, not accounting for any animations that are in flight.
 	///
 	/// When you set a desired weight using ``setTargetWeights(_:animation:)``, this ``weights`` parameter will immediately reflect that change, regardless of what animation duration has been set
-	public private(set) var weights: MorpherWeights
+	public private(set) var weights: MorphWeights
 	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
 	
 	private(set) var currentWeights: SIMD4<Float>
-	private var animator: MorpherAnimating?
+	private var animator: MorphAnimating?
 	private static let maxTextureWidth = 8192
 	
-	/// Initialises a new MorpherComponent for animating deforms to a model's geometry.
+	/// Initialises a new MorphComponent for animating deforms to a model's geometry.
 	///
 	/// - Parameters:
 	///   - entity: the `ModelEntity` that this component will be added to. This entity's materials will all be converted into `CustomMaterial`s in order to deform the geometry
@@ -34,9 +34,9 @@ public struct MorpherComponent: Component {
 	///   - options: a set of ``Option`` flags that can be passed, Defaults to an empty set.
 	///
 	/// - Throws: See ``Error`` for errors thrown from this initialiser
-	public init(entity: HasModel, targets: [ModelComponent], weights: MorpherWeights = .zero, options: Set<Option> = []) throws {
+	public init(entity: HasModel, targets: [ModelComponent], weights: MorphWeights = .zero, options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
-		guard 1...MorpherEnvironment.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
+		guard 1...MorphEnvironment.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
 		guard Self.allTargets(targets, areTopologicallyIdenticalToModel: model) else {
 			throw Error.targetsNotTopologicallyIdentical
 		}
@@ -53,14 +53,14 @@ public struct MorpherComponent: Component {
 		var updatedContents = MeshResource.Contents()
 		updatedContents.instances = model.mesh.contents.instances
 		var updatedMaterials: [CustomMaterial] = []
-		let geometryModifier = MorpherEnvironment.shared.morphGeometryModifiers[targets.count - 1]
+		let geometryModifier = MorphEnvironment.shared.morphGeometryModifiers[targets.count - 1]
 		
 		updatedContents.models = try MeshModelCollection(model.mesh.contents.models.enumerated().map { (submodelId, submodel) in
 			try MeshResource.Model(id: submodel.id, parts: submodel.parts.enumerated().map { (partId, part) in
 				let material = model.materials[part.materialIndex]
 				
 				var updatedMaterial = if options.contains(.debugNormals) {
-					try CustomMaterial(surfaceShader: MorpherEnvironment.shared.debugShader, geometryModifier: geometryModifier, lightingModel: .clearcoat)
+					try CustomMaterial(surfaceShader: MorphEnvironment.shared.debugShader, geometryModifier: geometryModifier, lightingModel: .clearcoat)
 				} else {
 					try CustomMaterial(from: material, geometryModifier: geometryModifier)
 				}
@@ -138,9 +138,9 @@ public struct MorpherComponent: Component {
 	/// - Parameters:
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
 	///   - duration: duration of the animation with which the update to the target ``weights`` will be applied. Defaults to 0.
-	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, duration: TimeInterval = 0) {
+	public mutating func setTargetWeights(_ targetWeights: MorphWeights, duration: TimeInterval = 0) {
 		weights = targetWeights
-		animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, duration: duration)
+		animator = LinearAnimator(origin: MorphWeights(values: currentWeights), target: targetWeights, duration: duration)
 	}
 	
 	/// Updates the ``weights`` for the morph targets, with advanced animation options
@@ -148,22 +148,22 @@ public struct MorpherComponent: Component {
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
 	///   - animation: the animation with which the update to the target ``weights`` will be applied
 	@available(iOS 17.0, macOS 14.0, *)
-	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation) {
+	public mutating func setTargetWeights(_ targetWeights: MorphWeights, animation: MorphAnimation) {
 		weights = targetWeights
-		animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
+		animator = TimelineAnimator(origin: MorphWeights(values: currentWeights), target: targetWeights, animation: animation)
 	}
 	
 	/// Updates the ``weights`` for the morph targets using a custom timeline animation
 	/// - Parameters:
 	///   - animations: keyframes that will update the target ``weights``
 	@available(iOS 17.0, macOS 14.0, *)
-	public mutating func setTargetWeights(@KeyframesBuilder<MorpherWeights> animations: () -> some Keyframes<MorpherWeights>) {
-		let timelineAnimator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), animations: animations)
+	public mutating func setTargetWeights(@KeyframesBuilder<MorphWeights> animations: () -> some Keyframes<MorphWeights>) {
+		let timelineAnimator = TimelineAnimator(origin: MorphWeights(values: currentWeights), animations: animations)
 		animator = timelineAnimator
 		weights = timelineAnimator.timeline.value(progress: 1)
 	}
 	
-	func updated(deltaTime: TimeInterval) -> MorpherComponent? {
+	func updated(deltaTime: TimeInterval) -> MorphComponent? {
 		var output = self
 		guard let event = output.animator?.update(with: deltaTime), event.status == .running else { return nil }
 		output.currentWeights = event.weights.values
@@ -171,21 +171,21 @@ public struct MorpherComponent: Component {
 	}
 }
 
-// MARK: - MorpherComponent.Error
+// MARK: - MorphComponent.Error
 
-public extension MorpherComponent {
-	/// Errors thrown from ``MorpherComponent/init(entity:targets:weights:options:)``
+public extension MorphComponent {
+	/// Errors thrown from ``MorphComponent/init(entity:targets:weights:options:)``
 	enum Error: String, Swift.Error {
-		/// The `entity` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` does not have a `ModelComponent`
+		/// The `entity` passed to ``MorphComponent/init(entity:targets:weights:options:)`` does not have a `ModelComponent`
 		case missingBaseMesh
 		
-		/// The `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
+		/// The `targets` passed to ``MorphComponent/init(entity:targets:weights:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
 		case targetsNotTopologicallyIdentical
 		
-		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` exceeds the maximum of  33,554,432
+		/// The total number of vertices summed from all the `targets` passed to ``MorphComponent/init(entity:targets:weights:options:)`` exceeds the maximum of  33,554,432
 		case tooMuchGeometry
 		
-		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` must contain 1, 2, or 3 elements
+		/// The array of `targets` passed to ``MorphComponent/init(entity:targets:weights:options:)`` must contain 1, 2, or 3 elements
 		case invalidNumberOfTargets
 		
 		/// Morpher texture creation failed for some reason. Please check the logs for CGImage related failure and raise an issue on the repository

@@ -1,5 +1,5 @@
 //
-//  MorpherEnvironment.swift
+//  MorphEnvironment.swift
 //  RealityMorpher
 //
 //  Created by Oliver Dew on 10/08/2023.
@@ -9,8 +9,8 @@ import Metal
 import RealityKit
 import RealityMorpherKernels
 
-final class MorpherEnvironment {
-	static private(set) var shared = MorpherEnvironment()
+final class MorphEnvironment {
+	static private(set) var shared = MorphEnvironment()
 	
 	static let maxTargetCount = 4
 	
@@ -24,20 +24,20 @@ final class MorpherEnvironment {
 			CustomMaterial.GeometryModifier(named: "morph_geometry_target_count_\(count)", in: library)
 		}
 		debugShader = CustomMaterial.SurfaceShader(named: "debug_normals", in: library)
-		MorpherSystem.registerSystem()
+		MorphSystem.registerSystem()
 	}
 }
 
-/// System that animates updates to meshes when a ``MorpherComponent`` has an update
-private struct MorpherSystem: System {
+/// System that animates updates to meshes when a ``MorphComponent`` has an update
+private struct MorphSystem: System {
 	
-	private let query = EntityQuery(where: .has(MorpherComponent.self) && .has(ModelComponent.self))
+	private let query = EntityQuery(where: .has(MorphComponent.self) && .has(ModelComponent.self))
 
 	fileprivate init(scene: Scene) {}
 
 	fileprivate func update(context: SceneUpdateContext) {
 		for entity in context.scene.performQuery(query) {
-			guard let morpher = (entity.components[MorpherComponent.self] as? MorpherComponent)?.updated(deltaTime: context.deltaTime),
+			guard let morpher = (entity.components[MorphComponent.self] as? MorphComponent)?.updated(deltaTime: context.deltaTime),
 				  var model = entity.components[ModelComponent.self] as? ModelComponent
 			else { continue }
 			

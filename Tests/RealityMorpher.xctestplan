@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "1FBC9F95-5EAB-42F4-98E6-8F4651EE1194",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "RealityMorpher",
+          "name" : "RealityMorpher"
+        }
+      ]
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "RealityMorpherTests",
+        "name" : "RealityMorpherTests"
+      }
+    }
+  ],
+  "version" : 1
+}

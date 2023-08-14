@@ -14,7 +14,7 @@ final class Presenter {
 	private var clothEntity: ModelEntity?
 	
 	init() {
-		MorpherComponent.registerComponent()
+		MorphComponent.registerComponent()
 	}
 	
 	func setup(scene: RealityKit.Scene) {
@@ -37,9 +37,9 @@ final class Presenter {
 		model.components.set(Rotatable())
 		model.components.set(Draggable())
 		model.name = "Cloth"
-		let morpherComponent = try! MorpherComponent(entity: model, targets: [target])
+		let morphComponent = try! MorphComponent(entity: model, targets: [target])
 		clothEntity = model
-		model.components.set(morpherComponent)
+		model.components.set(morphComponent)
 	}
 	
 	func setupDebug(scene: RealityKit.Scene) {
@@ -61,9 +61,9 @@ final class Presenter {
 	}
 	
 	func onTap() {
-		guard var morpherComponent = clothEntity?.components[MorpherComponent.self] as? MorpherComponent else { return }
-		let currentWeight = morpherComponent.weights[0]
-		morpherComponent.setTargetWeights([1 - currentWeight, 0, 0], animation: .spring(duration: 1, bounce: 0.5))
-		clothEntity?.components.set(morpherComponent)
+		guard var morphComponent = clothEntity?.components[MorphComponent.self] as? MorphComponent else { return }
+		let currentWeight = morphComponent.weights[0]
+		morphComponent.setTargetWeights([1 - currentWeight, 0, 0], animation: .spring(duration: 1, bounce: 0.5))
+		clothEntity?.components.set(morphComponent)
 	}
 }

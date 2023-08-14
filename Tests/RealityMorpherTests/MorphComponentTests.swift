@@ -4,9 +4,9 @@ import Accelerate
 import RealityKit
 @testable import RealityMorpher
 
-final class MorpherComponentTests: XCTestCase {
+final class MorphComponentTests: XCTestCase {
 	override class func setUp() {
-		MorpherComponent.registerComponent()
+		MorphComponent.registerComponent()
 	}
 	
 	func testGeneratedPositionsNormalsTexture() throws {
@@ -20,7 +20,7 @@ final class MorpherComponentTests: XCTestCase {
 		// target1 is a unit plane, but on XY
 		let target1 = ModelComponent(mesh: .generatePlane(width: 1, height: 1), materials: [material])
 		
-		let sut = try MorpherComponent(entity: base, targets: [target, target1])
+		let sut = try MorphComponent(entity: base, targets: [target, target1])
 		let texture = try XCTUnwrap(sut.textureResources.first)
 		XCTAssertEqual(texture.width, 4)
 		XCTAssertEqual(texture.height, 4) // positions & normals for 2 targets
@@ -56,7 +56,7 @@ final class MorpherComponentTests: XCTestCase {
 		let base = ModelEntity(mesh: try largeMesh(vertCount: maxWidth + 1, ramp: 0...100), materials: [material])
 		// all positions in target are offset by [1, 1, 1]
 		let target = ModelComponent(mesh: try largeMesh(vertCount: maxWidth + 1, ramp: 1...101), materials: [material])
-		let sut = try MorpherComponent(entity: base, targets: [target])
+		let sut = try MorphComponent(entity: base, targets: [target])
 		
 		let texture = try XCTUnwrap(sut.textureResources.first)
 		XCTAssertEqual(texture.width, maxWidth)
@@ -70,7 +70,7 @@ final class MorpherComponentTests: XCTestCase {
 		let material = SimpleMaterial()
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 3, depth: 1), materials: [material])
-		var sut = try MorpherComponent(entity: base, targets: [target])
+		var sut = try MorphComponent(entity: base, targets: [target])
 		if #available(iOS 17.0, macOS 14.0, *) {
 			sut.setTargetWeights([1], animation: .cubic(duration: 2))
 		} else {
@@ -84,16 +84,16 @@ final class MorpherComponentTests: XCTestCase {
 		XCTAssertNil(sut.updated(deltaTime: 1)) // no update past the end of the animation
 	}
 	
-	// MARK: - MorpherComponent.Error
+	// MARK: - MorphComponent.Error
 	
 	func testTargetNotTopologicallyIdentical() throws {
 		let material = SimpleMaterial()
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 1, depth: 1, cornerRadius: 0.1), materials: [material])
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [target])
+			let _ = try MorphComponent(entity: base, targets: [target])
 			XCTFail()
-		} catch let error as MorpherComponent.Error {
+		} catch let error as MorphComponent.Error {
 			XCTAssertEqual(error, .targetsNotTopologicallyIdentical)
 		}
 	}
@@ -115,9 +115,9 @@ final class MorpherComponentTests: XCTestCase {
 		})
 		let targetNoNormals = ModelComponent(mesh: try MeshResource.generate(from: updatedContents), materials: target.materials)
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [targetNoNormals])
+			let _ = try MorphComponent(entity: base, targets: [targetNoNormals])
 			XCTFail()
-		} catch let error as MorpherComponent.Error {
+		} catch let error as MorphComponent.Error {
 			XCTAssertEqual(error, .positionsCountNotEqualToNormalsCount)
 		}
 	}
@@ -127,9 +127,9 @@ final class MorpherComponentTests: XCTestCase {
 		let material = SimpleMaterial()
 		let target = ModelComponent(mesh: .generatePlane(width: 1, depth: 1, cornerRadius: 0.1), materials: [material])
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [target])
+			let _ = try MorphComponent(entity: base, targets: [target])
 			XCTFail()
-		} catch let error as MorpherComponent.Error {
+		} catch let error as MorphComponent.Error {
 			XCTAssertEqual(error, .missingBaseMesh)
 		}
 	}
@@ -138,9 +138,9 @@ final class MorpherComponentTests: XCTestCase {
 		let material = SimpleMaterial()
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [])
+			let _ = try MorphComponent(entity: base, targets: [])
 			XCTFail()
-		} catch let error as MorpherComponent.Error {
+		} catch let error as MorphComponent.Error {
 			XCTAssertEqual(error, .invalidNumberOfTargets)
 		}
 	}
@@ -150,9 +150,9 @@ final class MorpherComponentTests: XCTestCase {
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 1, depth: 1), materials: [material])
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [target, target, target, target, target])
+			let _ = try MorphComponent(entity: base, targets: [target, target, target, target, target])
 			XCTFail()
-		} catch let error as MorpherComponent.Error {
+		} catch let error as MorphComponent.Error {
 			XCTAssertEqual(error, .invalidNumberOfTargets)
 		}
 	}
@@ -174,8 +174,9 @@ final class MorpherComponentTests: XCTestCase {
 }
 
 extension TextureResource {
+	struct ParseDataError: Error {}
 	func getPositionsAndNormals(targetIndex: Int, targetCount: Int, vertCount: Int) throws -> (positions: [SIMD3<Float>], normals: [SIMD3<Float>]) {
-		let device = MTLCreateSystemDefaultDevice()!
+		guard let device = MTLCreateSystemDefaultDevice() else { throw ParseDataError() }
 		let descriptor = MTLTextureDescriptor.texture2DDescriptor(
 			pixelFormat: .rgba16Float,
 			width: width,
@@ -183,7 +184,7 @@ extension TextureResource {
 			mipmapped: false)
 		descriptor.usage = .shaderWrite // Required for copy
 
-		let texture = device.makeTexture(descriptor: descriptor)!
+		guard let texture = device.makeTexture(descriptor: descriptor) else { throw ParseDataError() }
 		try copy(to: texture)
 
 		#if os(OSX) // Managed mode exists only in OSX
@@ -191,7 +192,7 @@ extension TextureResource {
 			// Managed textures need to be synchronized before accessing their data
 			guard let commandBuffer = device.makeCommandQueue()?.makeCommandBuffer(),
 				  let blitEncoder = commandBuffer.makeBlitCommandEncoder()
-			else { return }
+			else { throw ParseDataError() }
 
 			blitEncoder.synchronize(resource: texture)
 			blitEncoder.endEncoding()
