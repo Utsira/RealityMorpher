@@ -1,5 +1,6 @@
 import XCTest
 import Metal
+import Accelerate
 import RealityKit
 @testable import RealityMorpher
 
@@ -50,6 +51,23 @@ final class MorpherComponentTests: XCTestCase {
 		let normals1 = try texture.getPositions(targetIndex: 3)
 		// normals now point forwards
 		XCTAssertEqual(normals1, Array(repeating: [0, 0, 1], count: 4))
+	}
+	
+	func testGeometryWithMoreVerticesThanMaxTextureWidth() throws {
+		let maxWidth = 8192
+		let material = SimpleMaterial()
+		let base = ModelEntity(mesh: try largeMesh(vertCount: maxWidth + 1, ramp: 0...100), materials: [material])
+		// all positions in target are offset by [1, 1, 1]
+		let target = ModelComponent(mesh: try largeMesh(vertCount: maxWidth + 1, ramp: 1...101), materials: [material])
+		let sut = try MorpherComponent(entity: base, targets: [target])
+		
+		let texture = try XCTUnwrap(sut.textureResources.first)
+		XCTAssertEqual(texture.vertexCount, maxWidth + 1)
+		XCTAssertEqual(texture.resource.width, maxWidth)
+		XCTAssertEqual(texture.resource.height, 3) // positions & normals overspilling onto a third row by 2 pixels
+		
+		let positions0 = try texture.getPositions(targetIndex: 0)
+		XCTAssertEqual(positions0, Array(repeating: .one, count: maxWidth + 1))
 	}
 	
 	func testAnimation() throws {
@@ -137,6 +155,21 @@ final class MorpherComponentTests: XCTestCase {
 			XCTAssertEqual(error, .invalidNumberOfTargets)
 		}
 	}
+	
+	// MARK: Helpers
+	/// Use Accelerate to quickly generate a large mesh
+	private func largeMesh(vertCount: Int, ramp: ClosedRange<Float>) throws -> MeshResource {
+		var descriptor = MeshDescriptor()
+		let elements: [Float] = vDSP.ramp(in: ramp, count: vertCount * 4) // multiuply by 4 because SIMD3 isn't packed, it has a memory layout of 16 bytes. Every 4th element (the .w component) will be ignored when we bind
+		let positions = Array(elements.withUnsafeBytes {
+			$0.bindMemory(to: SIMD3<Float>.self)
+		})
+		descriptor.positions = MeshBuffers.Positions(positions)
+		descriptor.normals = MeshBuffers.Normals(Array(repeating: [1, 0, 0], count: vertCount))
+		descriptor.primitives = .triangles(Array(0..<UInt32(vertCount)))
+		descriptor.materials = .allFaces(0)
+		return try MeshResource.generate(from: [descriptor])
+	}
 }
 
 extension MorpherComponent.PositionNormalTexture {
@@ -167,7 +200,7 @@ extension MorpherComponent.PositionNormalTexture {
 		#endif
 
 		// Getting raw pixel bytes
-		let bytesPerRow = 8 * texture.width
+		let bytesPerRow = MemoryLayout<SIMD4<Float16>>.stride * texture.width
 		var elements = [SIMD4<Float16>](repeating: .zero, count: texture.width * texture.height)
 		elements.withUnsafeMutableBytes { bytesPtr in
 			texture.getBytes(

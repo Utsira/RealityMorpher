@@ -25,3 +25,29 @@ final class MorpherEnvironment {
 		MorpherSystem.registerSystem()
 	}
 }
+
+/// System that animates updates to meshes when a ``MorpherComponent`` has an update
+private struct MorpherSystem: System {
+	
+	private let query = EntityQuery(where: .has(MorpherComponent.self) && .has(ModelComponent.self))
+
+	fileprivate init(scene: Scene) {}
+
+	fileprivate func update(context: SceneUpdateContext) {
+		for entity in context.scene.performQuery(query) {
+			guard let morpher = (entity.components[MorpherComponent.self] as? MorpherComponent)?.updated(deltaTime: context.deltaTime),
+				  var model = entity.components[ModelComponent.self] as? ModelComponent
+			else { continue }
+			
+			model.materials = model.materials.enumerated().map { index, material in
+				guard var customMaterial = material as? CustomMaterial else { return material }
+				let posTexture = morpher.textureResources[index]
+				customMaterial.custom.value = .init(morpher.currentWeights, Float(posTexture.vertexCount))
+				customMaterial.custom.texture = .init(posTexture.resource)
+				return customMaterial
+			}
+			entity.components.set(model)
+			entity.components.set(morpher)
+		}
+	}
+}
