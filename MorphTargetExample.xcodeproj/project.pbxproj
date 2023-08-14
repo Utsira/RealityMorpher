@@ -56,6 +56,7 @@
 		513DB0A42A7AAF0D0098D767 /* RealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealityView.swift; sourceTree = "<group>"; };
 		513DB0A62A7AB06F0098D767 /* cloth0.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth0.usdz; sourceTree = "<group>"; };
 		513DB0A72A7AB06F0098D767 /* cloth1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = cloth1.usdz; sourceTree = "<group>"; };
+		515F1AD62A8A2D9F00611AF9 /* MorphTargetExample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MorphTargetExample.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +134,7 @@
 		513DB0862A79AFD60098D767 /* MorphTargetExampleTests */ = {
 			isa = PBXGroup;
 			children = (
+				515F1AD62A8A2D9F00611AF9 /* MorphTargetExample.xctestplan */,
 				513DB0872A79AFD60098D767 /* MorphTargetExampleTests.swift */,
 			);
 			path = MorphTargetExampleTests;

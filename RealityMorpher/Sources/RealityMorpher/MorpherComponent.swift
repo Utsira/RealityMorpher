@@ -50,7 +50,6 @@ public struct MorpherComponent: Component {
 	private(set) var currentWeights: SIMD3<Float>
 	private var animator: MorpherAnimating?
 	private static let maxTextureWidth = 8192
-	private static let maxTargetCount = MorpherConstant.maxTargetCount.rawValue
 	
 	/// Initialises a new MorpherComponent for animating deforms to a model's geometry.
 	///
@@ -63,7 +62,7 @@ public struct MorpherComponent: Component {
 	/// - Throws: See ``Error`` for errors thrown from this initialiser
 	public init(entity: HasModel, targets: [ModelComponent], weights: [Float]? = nil, options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
-		guard 1...Self.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
+		guard 1...3 ~= targets.count else { throw Error.invalidNumberOfTargets }
 		guard Self.allTargets(targets, areTopologicallyIdenticalToModel: model) else {
 			throw Error.targetsNotTopologicallyIdentical
 		}
@@ -81,15 +80,16 @@ public struct MorpherComponent: Component {
 		var updatedContents = MeshResource.Contents()
 		updatedContents.instances = model.mesh.contents.instances
 		var updatedMaterials: [CustomMaterial] = []
+		let geometryModifier = MorpherEnvironment.shared.morphGeometryModifiers[targets.count - 1]
 		
 		updatedContents.models = try MeshModelCollection(model.mesh.contents.models.enumerated().map { (submodelId, submodel) in
 			try MeshResource.Model(id: submodel.id, parts: submodel.parts.enumerated().map { (partId, part) in
 				let material = model.materials[part.materialIndex]
 				
 				var updatedMaterial = if options.contains(.debugNormals) {
-					try CustomMaterial(surfaceShader: MorpherEnvironment.shared.debugShader, geometryModifier: MorpherEnvironment.shared.morphGeometryModifier, lightingModel: .clearcoat)
+					try CustomMaterial(surfaceShader: MorpherEnvironment.shared.debugShader, geometryModifier: geometryModifier, lightingModel: .clearcoat)
 				} else {
-					try CustomMaterial(from: material, geometryModifier: MorpherEnvironment.shared.morphGeometryModifier)
+					try CustomMaterial(from: material, geometryModifier: geometryModifier)
 				}
 				let targetParts: [MeshResource.Part] = targets.map {
 					$0.mesh.contents.models.map { $0 }[submodelId]
@@ -116,8 +116,6 @@ public struct MorpherComponent: Component {
 	
 	/// Create texture from part positions & normals
 	static private func createTextureForPart(_ base: MeshResource.Part, targetParts: [MeshResource.Part], vertCount: Int) throws -> TextureResource {
-		let paddingCount = maxTargetCount - targetParts.count
-		let padding: [Float] = Array(repeating: .zero, count: vertCount * 3 * paddingCount)
 		let positions: [Float] = targetParts.flatMap(\.positions.flattenedElements)
 		let basePositions: [Float] = Array(repeating: base.positions.flattenedElements, count: targetParts.count).flatMap { $0 }
 		let offsets: [Float] = vDSP.subtract(positions, basePositions)
@@ -125,7 +123,7 @@ public struct MorpherComponent: Component {
 			$0.normals?.flattenedElements ?? []
 		}
 		guard positions.count == normals.count else { throw Error.positionsCountNotEqualToNormalsCount }
-		let elements = (offsets + padding + normals + padding).map { Float16($0) }
+		let elements = (offsets + normals).map { Float16($0) }
 		let pixelcount = elements.count / 3
 		let width = min(vertCount, maxTextureWidth)
 		let (quotient, remainder) = pixelcount.quotientAndRemainder(dividingBy: width)

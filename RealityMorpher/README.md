@@ -13,4 +13,3 @@ Adds Morph Target / Key Shape animations to RealityKit
 
 - Use tuples instead of array? (target t0: ModelComponent, _ t1: ModelComponnet? = nil, _ t2: ModelComponnet? = nil )
 - MorpherAnimation be an enum (expose keyframeTimeline more)?
-- remove padding

@@ -9,7 +9,6 @@
 #define Shared_h
 
 #import <Foundation/Foundation.h>
-#import <../Constants.h>
 
 @interface NSBundle (NSBundleKernelsModule)
 + (NSBundle*) kernelsModule;

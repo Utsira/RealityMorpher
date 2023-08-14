@@ -2,7 +2,6 @@ import XCTest
 import Metal
 import RealityKit
 @testable import RealityMorpher
-import RealityMorpherKernels
 
 final class MorpherComponentTests: XCTestCase {
 	override class func setUp() {
@@ -24,7 +23,7 @@ final class MorpherComponentTests: XCTestCase {
 		let texture = try XCTUnwrap(sut.textureResources.first)
 		XCTAssertEqual(texture.vertexCount, 4)
 		XCTAssertEqual(texture.resource.width, 4)
-		XCTAssertEqual(texture.resource.height, 6) // positions & normals for 3 targets
+		XCTAssertEqual(texture.resource.height, 4) // positions & normals for 2 targets
 		
 		// target 0
 		let positions0 = try texture.getPositions(targetIndex: 0)
@@ -35,7 +34,7 @@ final class MorpherComponentTests: XCTestCase {
 			[-1, 0, 0],
 			[1, 0, 0]
 		])
-		let normals0 = try texture.getPositions(targetIndex: MorpherConstant.maxTargetCount.rawValue)
+		let normals0 = try texture.getPositions(targetIndex: 2)
 		// normals all point up still
 		XCTAssertEqual(normals0, Array(repeating: [0, 1, 0], count: 4))
 		
@@ -48,15 +47,9 @@ final class MorpherComponentTests: XCTestCase {
 			[0.0, 0.5, 0.5],
 			[0.0, 0.5, 0.5]
 		])
-		let normals1 = try texture.getPositions(targetIndex: MorpherConstant.maxTargetCount.rawValue + 1)
+		let normals1 = try texture.getPositions(targetIndex: 3)
 		// normals now point forwards
 		XCTAssertEqual(normals1, Array(repeating: [0, 0, 1], count: 4))
-		
-		// target 2 is blank
-		let positions2 = try texture.getPositions(targetIndex: 2)
-		XCTAssertEqual(positions2, Array(repeating: .zero, count: 4))
-		let normals2 = try texture.getPositions(targetIndex: MorpherConstant.maxTargetCount.rawValue + 2)
-		XCTAssertEqual(normals2, Array(repeating: .zero, count: 4))
 	}
 	
 	func testAnimation() throws {
