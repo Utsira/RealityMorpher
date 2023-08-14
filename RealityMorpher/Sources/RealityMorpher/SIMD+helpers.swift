@@ -19,12 +19,12 @@ extension SIMD4 {
 	}
 }
 
-extension SIMD3: VectorArithmetic & AdditiveArithmetic where Scalar == Float {
+extension SIMD4: VectorArithmetic & AdditiveArithmetic where Scalar == Float {
 	public mutating func scale(by rhs: Double) {
 		self *= Float(rhs)
 	}
 	
 	public var magnitudeSquared: Double {
-		length_squared(SIMD3<Double>(self))
+		length_squared(SIMD4<Double>(self))
 	}
 }

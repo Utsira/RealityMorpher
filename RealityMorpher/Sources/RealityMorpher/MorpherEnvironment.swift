@@ -12,13 +12,15 @@ import RealityMorpherKernels
 final class MorpherEnvironment {
 	static private(set) var shared = MorpherEnvironment()
 	
+	static let maxTargetCount = 4
+	
 	let morphGeometryModifiers: [CustomMaterial.GeometryModifier]
 	let debugShader: CustomMaterial.SurfaceShader
 	
 	private init() {
 		guard let device = MTLCreateSystemDefaultDevice() else { fatalError("Metal not supported") }
 		let library = try! device.makeDefaultLibrary(bundle: .kernelsModule())
-		morphGeometryModifiers = (1...3).map { count in
+		morphGeometryModifiers = (1...Self.maxTargetCount).map { count in
 			CustomMaterial.GeometryModifier(named: "morph_geometry_target_count_\(count)", in: library)
 		}
 		debugShader = CustomMaterial.SurfaceShader(named: "debug_normals", in: library)
@@ -41,9 +43,9 @@ private struct MorpherSystem: System {
 			
 			model.materials = model.materials.enumerated().map { index, material in
 				guard var customMaterial = material as? CustomMaterial else { return material }
-				let posTexture = morpher.textureResources[index]
-				customMaterial.custom.value = .init(morpher.currentWeights, Float(posTexture.vertexCount))
-				customMaterial.custom.texture = .init(posTexture.resource)
+				let resource = morpher.textureResources[index]
+				customMaterial.custom.value = morpher.currentWeights
+				customMaterial.custom.texture = .init(resource)
 				return customMaterial
 			}
 			entity.components.set(model)

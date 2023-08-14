@@ -1,6 +1,6 @@
 # ``RealityMorpher``
 
-Animate smooth transitions between an entity's base geometry and one or more target geometries
+Animate smooth transitions between an entity's base geometry and up to four target geometries
 
 ## Overview
 

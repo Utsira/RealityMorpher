@@ -22,12 +22,11 @@ final class MorpherComponentTests: XCTestCase {
 		
 		let sut = try MorpherComponent(entity: base, targets: [target, target1])
 		let texture = try XCTUnwrap(sut.textureResources.first)
-		XCTAssertEqual(texture.vertexCount, 4)
-		XCTAssertEqual(texture.resource.width, 4)
-		XCTAssertEqual(texture.resource.height, 4) // positions & normals for 2 targets
+		XCTAssertEqual(texture.width, 4)
+		XCTAssertEqual(texture.height, 4) // positions & normals for 2 targets
 		
 		// target 0
-		let positions0 = try texture.getPositions(targetIndex: 0)
+		let (positions0, normals0) = try texture.getPositionsAndNormals(targetIndex: 0, targetCount: 2, vertCount: 4)
 		// expect the geometry to expand by 1 unit in each direction on the x-axis
 		XCTAssertEqual(positions0, [
 			[-1, 0, 0],
@@ -35,12 +34,11 @@ final class MorpherComponentTests: XCTestCase {
 			[-1, 0, 0],
 			[1, 0, 0]
 		])
-		let normals0 = try texture.getPositions(targetIndex: 2)
 		// normals all point up still
 		XCTAssertEqual(normals0, Array(repeating: [0, 1, 0], count: 4))
 		
 		// target 1
-		let positions1 = try texture.getPositions(targetIndex: 1)
+		let (positions1, normals1) = try texture.getPositionsAndNormals(targetIndex: 1, targetCount: 2, vertCount: 4)
 		// expect geometry to rotate around x-axis
 		XCTAssertEqual(positions1, [
 			[0.0, -0.5, -0.5],
@@ -48,7 +46,6 @@ final class MorpherComponentTests: XCTestCase {
 			[0.0, 0.5, 0.5],
 			[0.0, 0.5, 0.5]
 		])
-		let normals1 = try texture.getPositions(targetIndex: 3)
 		// normals now point forwards
 		XCTAssertEqual(normals1, Array(repeating: [0, 0, 1], count: 4))
 	}
@@ -62,11 +59,10 @@ final class MorpherComponentTests: XCTestCase {
 		let sut = try MorpherComponent(entity: base, targets: [target])
 		
 		let texture = try XCTUnwrap(sut.textureResources.first)
-		XCTAssertEqual(texture.vertexCount, maxWidth + 1)
-		XCTAssertEqual(texture.resource.width, maxWidth)
-		XCTAssertEqual(texture.resource.height, 3) // positions & normals overspilling onto a third row by 2 pixels
+		XCTAssertEqual(texture.width, maxWidth)
+		XCTAssertEqual(texture.height, 3) // positions & normals overspilling onto a third row by 2 pixels
 		
-		let positions0 = try texture.getPositions(targetIndex: 0)
+		let (positions0, _) = try texture.getPositionsAndNormals(targetIndex: 0, targetCount: 1, vertCount: maxWidth + 1)
 		XCTAssertEqual(positions0, Array(repeating: .one, count: maxWidth + 1))
 	}
 	
@@ -75,11 +71,12 @@ final class MorpherComponentTests: XCTestCase {
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 3, depth: 1), materials: [material])
 		var sut = try MorpherComponent(entity: base, targets: [target])
-		sut.setTargetWeights([1, 0, 0], animation: MorpherAnimation(duration: 2, mode: .linear))
+		sut.setTargetWeights([1], animation: MorpherAnimation(duration: 2, mode: .cubic))
+		XCTAssertEqual(sut.weights, [1, 0, 0, 0]) // immediately reports target weight
 		sut = try XCTUnwrap(sut.updated(deltaTime: 1))
-		XCTAssertEqual(sut.currentWeights, [0.5, 0, 0]) // midpoint of the animation
+		XCTAssertEqual(sut.currentWeights, [0.5, 0, 0, 0]) // midpoint of the animation
 		sut = try XCTUnwrap(sut.updated(deltaTime: 1))
-		XCTAssertEqual(sut.currentWeights, [1, 0, 0]) // end of the animation
+		XCTAssertEqual(sut.currentWeights, [1, 0, 0, 0]) // end of the animation
 		XCTAssertNil(sut.updated(deltaTime: 1)) // no update past the end of the animation
 	}
 	
@@ -149,7 +146,7 @@ final class MorpherComponentTests: XCTestCase {
 		let base = ModelEntity(mesh: .generatePlane(width: 1, depth: 1),materials: [material])
 		let target = ModelComponent(mesh: .generatePlane(width: 1, depth: 1), materials: [material])
 		do {
-			let _ = try MorpherComponent(entity: base, targets: [target, target, target, target])
+			let _ = try MorpherComponent(entity: base, targets: [target, target, target, target, target])
 			XCTFail()
 		} catch let error as MorpherComponent.Error {
 			XCTAssertEqual(error, .invalidNumberOfTargets)
@@ -172,18 +169,18 @@ final class MorpherComponentTests: XCTestCase {
 	}
 }
 
-extension MorpherComponent.PositionNormalTexture {
-	func getPositions(targetIndex: Int) throws -> [SIMD3<Float>] {
-		guard let device = MTLCreateSystemDefaultDevice() else { return [] }
+extension TextureResource {
+	func getPositionsAndNormals(targetIndex: Int, targetCount: Int, vertCount: Int) throws -> (positions: [SIMD3<Float>], normals: [SIMD3<Float>]) {
+		let device = MTLCreateSystemDefaultDevice()!
 		let descriptor = MTLTextureDescriptor.texture2DDescriptor(
 			pixelFormat: .rgba16Float,
-			width: resource.width,
-			height: resource.height,
+			width: width,
+			height: height,
 			mipmapped: false)
 		descriptor.usage = .shaderWrite // Required for copy
 
-		guard let texture = device.makeTexture(descriptor: descriptor) else { return [] }
-		try resource.copy(to: texture)
+		let texture = device.makeTexture(descriptor: descriptor)!
+		try copy(to: texture)
 
 		#if os(OSX) // Managed mode exists only in OSX
 		if texture.storageMode == .managed {
@@ -210,9 +207,13 @@ extension MorpherComponent.PositionNormalTexture {
 				mipmapLevel: 0
 			)
 		}
-		let startIndex = targetIndex * vertexCount
-		let endIndex = startIndex + vertexCount
-		return elements[startIndex..<endIndex]
-			.map { SIMD3<Float>($0.xyz) }
+		var positions: [SIMD3<Float>] = []
+		var normals: [SIMD3<Float>] = []
+		for index in 0..<vertCount {
+			let elementId = ((index * targetCount) + targetIndex) * 2
+			positions.append(SIMD3<Float>(elements[elementId].xyz))
+			normals.append(SIMD3<Float>(elements[elementId + 1].xyz))
+		}
+		return (positions: positions, normals: normals)
 	}
 }

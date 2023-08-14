@@ -4,7 +4,7 @@ Follow these steps to get up and running
 
 ## Overview
 
-Each ModelEntity can have up to three Morph Targets. The targets must all be topologically identical to the base model.
+Each ModelEntity can have up to four Morph Targets. The targets must all be topologically identical to the base model.
 
 ### Registration
 
@@ -28,7 +28,7 @@ do {
 
 ### Blending between Morph Targets
 
-Animate between the different Morph Targets by assigning a weight for each target. Up to 3 weights are passed as a ``SIMD3<Float>``. A weight of 0
+Animate between the different Morph Targets by assigning a weight for each target. Up to 4 weights are passed as a ``SIMD4<Float>``. A weight of 0
 - ``MorpherComponent/setTargetWeights(_:animation:)``
 
 ### Specifying how a change in weight should be animated
