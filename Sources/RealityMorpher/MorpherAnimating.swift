@@ -20,10 +20,10 @@ struct MorpherEvent {
 	let weights: MorpherWeights
 }
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct TimelineAnimator: MorpherAnimating {
+	let timeline: KeyframeTimeline<MorpherWeights>
 	private var timeElapsed: TimeInterval = .zero
-	private let timeline: KeyframeTimeline<MorpherWeights>
 	
 	init(origin: MorpherWeights, target: MorpherWeights, animation: MorpherAnimation) {
 		timeline = KeyframeTimeline(initialValue: origin) {
@@ -36,6 +36,10 @@ struct TimelineAnimator: MorpherAnimating {
 				SpringKeyframe(target, spring: Spring(duration: animation.duration, bounce: bounce))
 			}
 		}
+	}
+	
+	init(origin: MorpherWeights, @KeyframesBuilder<MorpherWeights> animations: () -> some Keyframes<MorpherWeights>) {
+		timeline = KeyframeTimeline(initialValue: origin, content: animations)
 	}
 	
 	mutating func update(with deltaTime: TimeInterval) -> MorpherEvent {

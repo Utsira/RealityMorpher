@@ -14,4 +14,5 @@ Manage these geometry transitions by attaching a ``MorpherComponent`` to a `Mode
 
 ### Animating transitions
 
+- ``MorpherWeights``
 - ``MorpherAnimation``

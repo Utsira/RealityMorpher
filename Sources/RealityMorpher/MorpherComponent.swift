@@ -3,22 +3,23 @@ import RealityKit
 import CoreGraphics
 import RealityMorpherKernels
 import Accelerate
+import SwiftUI
 
 /// Add this component to a `ModelEntity` to enable morph target (AKA shape key or blend shape) animations.
 public struct MorpherComponent: Component {
 	
-	/// Errors thrown from ``MorpherComponent/init(entity:targets:options:)``
+	/// Errors thrown from ``MorpherComponent/init(entity:targets:weights:options:)``
 	public enum Error: String, Swift.Error {
-		/// The `entity` passed to ``MorpherComponent/init(entity:targets:options:)`` does not have a `ModelComponent`
+		/// The `entity` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` does not have a `ModelComponent`
 		case missingBaseMesh
 		
-		/// The `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
+		/// The `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` do not have the same number of vertices as the model on the base `entity`, arranged in the same configuration of submodels and parts.
 		case targetsNotTopologicallyIdentical
 		
-		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` exceeds the maximum of  33,554,432
+		/// The total number of vertices summed from all the `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` exceeds the maximum of  33,554,432
 		case tooMuchGeometry
 		
-		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:options:)`` must contain 1, 2, or 3 elements
+		/// The array of `targets` passed to ``MorpherComponent/init(entity:targets:weights:options:)`` must contain 1, 2, or 3 elements
 		case invalidNumberOfTargets
 		
 		/// Morpher texture creation failed for some reason. Please check the logs for CGImage related failure and raise an issue on the repository
@@ -28,20 +29,20 @@ public struct MorpherComponent: Component {
 		case positionsCountNotEqualToNormalsCount
 	}
 	
+	/// Debug options
 	public enum Option: String {
 		/// Display normals as vertex colors
 		case debugNormals
 	}
 	
-	/// The weights for each of the targets
+	/// The weights for each of the targets, not accounting for any animations that are in flight.
 	///
-	/// Use ``setTargetWeights(_:animation:)`` to update these with an animation
-	public var weights: [Float] { [targetWeights.x, targetWeights.y, targetWeights.z, targetWeights.w] }
+	/// When you set a desired weight using ``setTargetWeights(_:animation:)``, this ``weight`` parameter will immediately reflect that change, regardless of what animation duration has been set
+	public private(set) var weights: MorpherWeights
 	
 	/// We need to keep a reference to the texture resources we create, otherwise the custom textures get nilled when they update
 	let textureResources: [TextureResource]
 	
-	private var targetWeights: MorpherWeights
 	private(set) var currentWeights: SIMD4<Float>
 	private var animator: MorpherAnimating?
 	private static let maxTextureWidth = 8192
@@ -51,11 +52,11 @@ public struct MorpherComponent: Component {
 	/// - Parameters:
 	///   - entity: the `ModelEntity` that this component will be added to. This entity's materials will all be converted into `CustomMaterial`s in order to deform the geometry
 	///   - targets: an array of target geometries that can be morphed to. There must be between 1 and 4 geometries in this array. Each geometry must be topologically identical to the base entity's model (in other words have the same number of submodels, composed of the same number of parts, each of which must have the same number of vertices)
-	///   - weights: an array of weights, describing the extent to which each target in the `targets` parameter should be applied. Typically these are in the range 0 to 1, 0 indicating the target is not applied at all, 1 indicating it is fully applied. Each element corresponds to the element at the same index in the `targets` property. If this parameter is omitted, the weights will default to zero.
+	///   - weights: a collection of weights describing the extent to which each target in the `targets` parameter should be applied. Typically these are in the range 0 to 1, 0 indicating the target is not applied at all, 1 indicating it is fully applied. Each element corresponds to the element at the same index in the `targets` property. Defaults to zero.
 	///   - options: a set of ``Option`` flags that can be passed, Defaults to an empty set.
 	///
 	/// - Throws: See ``Error`` for errors thrown from this initialiser
-	public init(entity: HasModel, targets: [ModelComponent], weights: [Float]? = nil, options: Set<Option> = []) throws {
+	public init(entity: HasModel, targets: [ModelComponent], weights: MorpherWeights = .zero, options: Set<Option> = []) throws {
 		guard var model = entity.model else { throw Error.missingBaseMesh }
 		guard 1...MorpherEnvironment.maxTargetCount ~= targets.count else { throw Error.invalidNumberOfTargets }
 		guard Self.allTargets(targets, areTopologicallyIdenticalToModel: model) else {
@@ -66,8 +67,7 @@ public struct MorpherComponent: Component {
 		guard vertexCount * targets.count * 2 <= maxElements else {
 			throw Error.tooMuchGeometry
 		}
-		let weights = MorpherWeights(weights ?? [])
-		targetWeights = weights
+		self.weights = weights
 		currentWeights = weights.values
 		var texResources: [TextureResource] = []
 
@@ -157,17 +157,27 @@ public struct MorpherComponent: Component {
 	
 	// MARK: - Animation
 	
-	/// Updates the ``weights`` for the morph `targets` passed to ``init(entity:targets:options:)``
+	/// Updates the ``weights`` for the morph targets.
 	/// - Parameters:
 	///   - targetWeights: the new ``weights`` to animate to for each of the targets.
 	///   - animation: the animation with which the update to the target ``weights`` will be applied
-	public mutating func setTargetWeights(_ targetWeights: [Float], animation: MorpherAnimation = .immediate) {
-		self.targetWeights = MorpherWeights(targetWeights)
+	public mutating func setTargetWeights(_ targetWeights: MorpherWeights, animation: MorpherAnimation = .immediate) {
+		weights = targetWeights
 		if #available(iOS 17.0, *) {
-			animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: self.targetWeights, animation: animation)
+			animator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
 		} else {
-			animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: self.targetWeights, animation: animation)
+			animator = LinearAnimator(origin: MorpherWeights(values: currentWeights), target: targetWeights, animation: animation)
 		}
+	}
+	
+	/// Updates the ``weights`` for the morph targets using a custom timeline animation
+	/// - Parameters:
+	///   - animations: keyframes that will update the target ``weights``
+	@available(iOS 17.0, macOS 14.0, *)
+	public mutating func setTargetWeights(@KeyframesBuilder<MorpherWeights> animations: () -> some Keyframes<MorpherWeights>) {
+		let timelineAnimator = TimelineAnimator(origin: MorpherWeights(values: currentWeights), animations: animations)
+		animator = timelineAnimator
+		weights = timelineAnimator.timeline.value(progress: 1)
 	}
 	
 	func updated(deltaTime: TimeInterval) -> MorpherComponent? {
